@@ -27,7 +27,7 @@ sms = {
 # eval_at = [2, 10]
 # tc = load('tc-25.npy')[:3]
 
-gui = True
+gui = False
 
 
 class PoppyXp(PoppyVrepXp):
@@ -43,11 +43,11 @@ class PoppyXp(PoppyVrepXp):
 
         m_rand = rand_bounds(conf.m_bounds, n=n)
         for m in m_rand:
-            m[-expe.ag.dmp.n_dmps:] = expe.ag.default[:expe.ag.dmp.n_dmps] + conf.m_ranges[-expe.ag.dmp.n_dmps:] * randn(expe.ag.dmp.n_dmps)
+            m[-expe.ag.dmp.n_dmps:] = expe.ag.dmp.default[:expe.ag.dmp.n_dmps] + conf.m_ranges[-expe.ag.dmp.n_dmps:] * randn(expe.ag.dmp.n_dmps)
             mov = expe.ag.motor_primitive(m)
             s = expe.env.update(mov, log=False)
             s = expe.ag.sensory_primitive(s)
-            expe.ag.sensorimotor_model.update(m)
+            expe.ag.sensorimotor_model.update(m, s)
 
     def run(self):
         print 'run'
@@ -81,7 +81,6 @@ class PoppyXp(PoppyVrepXp):
 
         used = array([False]*n_dmps + [True]*(n_dmps*n_bfs) + [True]*n_dmps)
         ag = DmpAgent(n_dmps, n_bfs, used, default, poppy_ag_conf, sm, im)
-        print 'ag', ag.conf.m_ndims
 
         print 'Running xp', self.tag
 
@@ -91,17 +90,19 @@ class PoppyXp(PoppyVrepXp):
         env.unsubscribe('sensori', xp)
         ag.subscribe('movement', xp)
         # xp.evaluate_at(eval_at, tc)
-        xp.run(10)
+
+        self.bootstrap(xp, 4)
+        xp.run(30)
 
         with open('logs/{}'.format(self.tag), 'wb') as f:
             pickle.dump(xp.log, f)
 
 
 if __name__ == '__main__':
-    SM = ('knn', )
-    IM = ('motor', 'goal')
-    print 'creating xp'
-    expes = [PoppyXp('goal', 'random', 'knn', 0), PoppyXp('motor', 'random', 'knn', 0)]
+    # SM = ('knn', )
+    # IM = ('motor', 'goal')
+    # print 'creating xp'
+    expes = [PoppyXp('goal', 'random', 'knn', 0), PoppyXp('goal', 'discretized_progress', 'knn', 0)]
     # expes[0].setup()
     # expes[0].run()
     #expes[0].start()
