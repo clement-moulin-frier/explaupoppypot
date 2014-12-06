@@ -32,9 +32,10 @@ gui = False
 
 
 class PoppyXp(PoppyVrepXp):
-    def __init__(self, babbling_name, im_name, sm_name, iter):
+    def __init__(self, babbling_name, im_name, sm_name, n_bfs=2, iter=0):
 
         self.babbling_name, self.im_name, self.sm_name = babbling_name, im_name, sm_name
+        self.n_bfs = n_bfs
         self.tag = 'xp-{}_{}-{}-{}.pickle'.format(im_name, babbling_name, sm_name, iter)
         PoppyVrepXp.__init__(self, scene, gui=gui)
 
@@ -63,7 +64,7 @@ class PoppyXp(PoppyVrepXp):
         env = VrepEnvironment(self.robot, **conf)
         time.sleep(10)
 
-        ag = DmpAgent(**get_params(self.babbling_name, self.sm_name, self.im_name, env))
+        ag = DmpAgent(**get_params(self.n_bfs, self.babbling_name, self.sm_name, self.im_name, env))
 
         print 'Running xp', self.tag
 
@@ -87,7 +88,7 @@ if __name__ == '__main__':
     # SM = ('knn', )
     # IM = ('motor', 'goal')
     # print 'creating xp'
-    expes = [PoppyXp('goal', 'discretized_progress', 'knn', 0)]
+    expes = [PoppyXp('goal', 'discretized_progress', 'knn', n_bfs=3)]
     # expes[0].setup()
     # expes[0].run()
     expes[0].start()

@@ -9,12 +9,15 @@ from explauto.agent import Agent
 
 
 class DmpAgent(Agent):
-    def __init__(self, n_dmps, n_bfs, used, default, conf, sm, im):
+    def __init__(self, n_dmps, n_bfs, used, default, conf, sm, im, dmp_type='discrete', ay=None):
         Agent.__init__(self, conf, sm, im)
         self.n_dmps, self.n_bfs = n_dmps, n_bfs
         self.current_m = zeros(self.conf.m_ndims)
-        self.dmp = DmpPrimitive(n_dmps, n_bfs, used, default,
-                                type='rythmic', ay=ones(n_dmps) * 1.)
+        if ay is None:
+            self.dmp = DmpPrimitive(n_dmps, n_bfs, used, default, type=dmp_type)
+        else:
+            self.dmp = DmpPrimitive(n_dmps, n_bfs, used, default,
+                                    type=dmp_type, ay=ones(n_dmps) * 1.)
 
     def motor_primitive(self, m):
         self.m = bounds_min_max(m, self.conf.m_mins, self.conf.m_maxs)
@@ -30,9 +33,8 @@ sms = {
     'knn': (NearestNeighbor, {'sigma_ratio': 1. / 38}),
 }
 
-def get_params(babbling_name, sm_name, im_name, env):
+def get_params(n_bfs, babbling_name, sm_name, im_name, env):
     n_dmps = env.conf.m_ndims
-    n_bfs = 4
 
     default = zeros(n_dmps*(n_bfs+2))
     # angle_limits = []
