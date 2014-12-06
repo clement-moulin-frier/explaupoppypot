@@ -19,6 +19,10 @@ class DmpAgent(Agent):
             self.dmp = DmpPrimitive(n_dmps, n_bfs, used, default,
                                     type=dmp_type, ay=ones(n_dmps) * 1.)
 
+    # @classmethod
+    # def from_settings(cls, n_bfs, babbling_name, sm_name, im_name, env):
+
+
     def motor_primitive(self, m):
         self.m = bounds_min_max(m, self.conf.m_mins, self.conf.m_maxs)
         y = self.dmp.trajectory(self.m)
@@ -33,15 +37,12 @@ sms = {
     'knn': (NearestNeighbor, {'sigma_ratio': 1. / 38}),
 }
 
-def get_params(n_bfs, babbling_name, sm_name, im_name, env):
-    n_dmps = env.conf.m_ndims
+def get_params(n_bfs, babbling_name, sm_name, im_name, starting_position):
+    n_dmps = len(starting_position)
 
     default = zeros(n_dmps*(n_bfs+2))
-    # angle_limits = []
-    for i, m in enumerate(env.robot.motors):
-        default[i] = m.present_position
-        default[i + (n_dmps*(n_bfs+1))] = m.present_position
-    default = array(default)
+    default[:n_dmps] = starting_position
+    default[-n_dmps:] = starting_position
 
     poppy_ag = {'m_mins': list([-5000] * (n_dmps * n_bfs)) + list(default[:n_dmps] - 180.),
                 'm_maxs': list([5000] * (n_dmps * n_bfs)) + list(default[:n_dmps] + 180.),

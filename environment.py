@@ -74,6 +74,7 @@ class VrepEnvironment(Environment):
     def __init__(self, robot, motors, move_duration, t_reset,
                  m_mins, m_maxs, s_mins, s_maxs):
 
+        Environment.__init__(self, m_mins, m_maxs, s_mins, s_maxs)
         self.robot = robot
         self.motors = []
         for i_mot, mot in enumerate(getattr(self.robot, motors)):
@@ -82,7 +83,12 @@ class VrepEnvironment(Environment):
                 m_mins[i_mot] = constraints[mot.name][0]
                 m_maxs[i_mot] = constraints[mot.name][1]
 
-        Environment.__init__(self, m_mins, m_maxs, s_mins, s_maxs)
+        time.sleep(4)
+        rest_position = []
+        # angle_limits = []
+        for m in self.robot.motors:
+            rest_position.append(m.present_position)
+        self.rest_position = array(rest_position)
 
         self.move_duration = move_duration
         self.t_reset = t_reset
