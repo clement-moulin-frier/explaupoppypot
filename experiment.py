@@ -75,13 +75,14 @@ class PoppyXp(PoppyVrepXp):
         ag.subscribe('movement', xp)
         # xp.evaluate_at(eval_at, tc)
 
-        self.bootstrap(xp, 8)
+        self.bootstrap(xp, 16)
         log_each = 100
         for run in range(1000 / log_each):
             xp.run(log_each)
             with open('logs/{}'.format(self.tag), 'wb') as f:
                 pickle.dump(xp.log, f)
             f.close()
+            print 'saved ' + str((run + 1) * log_each)
 
 
 if __name__ == '__main__':

@@ -24,7 +24,7 @@ alias = 'motors'  # 'l_leg'
 
 conf = {
     'motors': alias,
-    'move_duration': 4.,
+    'move_duration': 6.,
     't_reset': 1.,
     'm_mins': array([-360.] * len(poppy_config['motors'])),
     'm_maxs': array([360.] * len(poppy_config['motors'])),
