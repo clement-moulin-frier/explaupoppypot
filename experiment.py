@@ -62,36 +62,6 @@ class PoppyXp(PoppyVrepXp):
         print 'run'
         env = VrepEnvironment(self.robot, **conf)
         time.sleep(10)
-        # n_dmps = env.conf.m_ndims
-        # n_bfs = 2
-        #
-        # default = zeros(n_dmps*(n_bfs+2))
-        # # angle_limits = []
-        # for i, m in enumerate(env.robot.motors):
-        #     default[i] = m.present_position
-        #     default[i + (n_dmps*(n_bfs+1))] = m.present_position
-        #     # angle_limits.append(poppy_config['motors'][m.name]['angle_limit'])
-        # default = array(default)
-        # print 'default', default
-        # # angle_limits = array(angle_limits)
-        # # motor_ranges = angle_limits[:, 1] - angle_limits[:, 0]
-        #
-        # poppy_ag = {'m_mins': list([-100] * (n_dmps * n_bfs)) + list(default[:n_dmps] + 90.), # + list(angle_limits[:, 0]), # + [-40.] * n_dmps, # + list(angle_limits[:,0]),
-        #             'm_maxs': list([100] * (n_dmps * n_bfs)) + list(default[:n_dmps] - 90.), # + list(angle_limits[:, 1]), # + [40.] * n_dmps, # + list(angle_limits[:,1]),
-        #             's_mins': [-1., -0.7, -0.1 ],
-        #             's_maxs': [1., 0.7, 0.7]
-        #            }
-        #
-        # poppy_ag_conf = make_configuration(**poppy_ag)
-        #
-        # im_dims = poppy_ag_conf.m_dims if self.babbling_name == 'motor' else poppy_ag_conf.s_dims
-        # im = InterestModel.from_configuration(poppy_ag_conf, im_dims, self.im_name)
-        #
-        # sm_cls, kwargs = sms[self.sm_name]
-        # sm = sm_cls(poppy_ag_conf, **kwargs)
-        #
-        # used = array([False]*n_dmps + [True]*(n_dmps*n_bfs) + [True]*n_dmps)
-        # ag = DmpAgent(n_dmps, n_bfs, used, default, poppy_ag_conf, sm, im)
 
         ag = DmpAgent(**get_params(self.babbling_name, self.sm_name, self.im_name, env))
 
@@ -104,11 +74,13 @@ class PoppyXp(PoppyVrepXp):
         ag.subscribe('movement', xp)
         # xp.evaluate_at(eval_at, tc)
 
-        self.bootstrap(xp, 4)
-        xp.run(100)
-
-        with open('logs/{}'.format(self.tag), 'wb') as f:
-            pickle.dump(xp.log, f)
+        self.bootstrap(xp, 8)
+        log_each = 100
+        for run in range(1000 / log_each):
+            xp.run(log_each)
+            with open('logs/{}'.format(self.tag), 'wb') as f:
+                pickle.dump(xp.log, f)
+            f.close()
 
 
 if __name__ == '__main__':
