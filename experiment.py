@@ -64,7 +64,7 @@ class PoppyXp(PoppyVrepXp):
         env = VrepEnvironment(self.robot, **conf)
         print 'default', env.rest_position
 
-        ag = DmpAgent(**get_params(self.n_bfs, self.babbling_name, self.sm_name, self.im_name, env.rest_position))
+        ag = DmpAgent(**get_params(self.n_bfs, env.rest_position, self.babbling_name, self.sm_name, self.im_name))
 
         print 'Running xp', self.tag
 

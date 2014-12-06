@@ -19,8 +19,10 @@ class DmpAgent(Agent):
             self.dmp = DmpPrimitive(n_dmps, n_bfs, used, default,
                                     type=dmp_type, ay=ones(n_dmps) * 1.)
 
-    # @classmethod
-    # def from_settings(cls, n_bfs, babbling_name, sm_name, im_name, env):
+    @classmethod
+    def from_settings(cls, n_bfs, starting_position, babbling_name, sm_name, im_name):
+        params = get_params(n_bfs, starting_position, babbling_name, sm_name, im_name)
+        return cls(**params)
 
 
     def motor_primitive(self, m):
@@ -37,7 +39,7 @@ sms = {
     'knn': (NearestNeighbor, {'sigma_ratio': 1. / 38}),
 }
 
-def get_params(n_bfs, babbling_name, sm_name, im_name, starting_position):
+def get_params(n_bfs, starting_position, babbling_name, sm_name, im_name):
     n_dmps = len(starting_position)
 
     default = zeros(n_dmps*(n_bfs+2))
