@@ -27,12 +27,12 @@ class DmpAgent(Agent):
 
 
 sms = {
-    'knn': (NearestNeighbor, {'sigma_ratio': 1. / 28}),
+    'knn': (NearestNeighbor, {'sigma_ratio': 1. / 38}),
 }
 
 def get_params(babbling_name, sm_name, im_name, env):
     n_dmps = env.conf.m_ndims
-    n_bfs = 2
+    n_bfs = 4
 
     default = zeros(n_dmps*(n_bfs+2))
     # angle_limits = []
