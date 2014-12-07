@@ -77,7 +77,7 @@ class PoppyXp(PoppyVrepXp):
 
         self.bootstrap(xp, 16)
         log_each = 100
-        for run in range(1000 / log_each):
+        for run in range(6000 / log_each):
             xp.run(log_each)
             with open('logs/{}'.format(self.tag), 'wb') as f:
                 pickle.dump(xp.log, f)
@@ -89,7 +89,7 @@ if __name__ == '__main__':
     # SM = ('knn', )
     # IM = ('motor', 'goal')
     # print 'creating xp'
-    expes = [PoppyXp('goal', 'discretized_progress', 'knn', n_bfs=3)]
+    expes = [PoppyXp('goal', 'discretized_progress', 'knn', n_bfs=3, iter=0)]
     # expes[0].setup()
     # expes[0].run()
     expes[0].start()
