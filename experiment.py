@@ -1,7 +1,8 @@
-import time
+import os
 import pickle
+import datetime
 
-from numpy import array, zeros, nan
+from numpy import array, nan
 from numpy.random import randn
 
 # from explauto.sensorimotor_model.nearest_neighbor import NearestNeighbor
@@ -11,9 +12,8 @@ from explauto.utils import rand_bounds
 # from explauto import InterestModel
 
 from pyvrep.xp import PoppyVrepXp
-from pyvrep.pool import VrepXpPool
 
-from environment import VrepEnvironment, scene, conf, poppy_config
+from environment import VrepEnvironment, scene, conf
 from agent import DmpAgent, get_params
 
 
@@ -40,7 +40,7 @@ class PoppyXp(PoppyVrepXp):
         PoppyVrepXp.__init__(self, scene, gui=gui)
 
 
-    def bootstrap(self, expe, n, bootstap_range_div=28.):
+    def bootstrap(self, expe, n, bootstap_range_div):
         conf = make_configuration(expe.ag.conf.m_centers - expe.ag.conf.m_ranges/(2 * bootstap_range_div),
                                   expe.ag.conf.m_centers + expe.ag.conf.m_ranges/(2 * bootstap_range_div),
                                   expe.ag.conf.s_centers - expe.ag.conf.s_ranges/(2 * bootstap_range_div),
@@ -60,9 +60,11 @@ class PoppyXp(PoppyVrepXp):
         expe._update_logs()
 
     def run(self):
-        print 'run'
+        date = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        log_dir = 'logs/' + date
+        os.mkdir(log_dir)
+
         env = VrepEnvironment(self.robot, **conf)
-        print 'default', env.rest_position
 
         ag = DmpAgent(**get_params(self.n_bfs, env.rest_position, self.babbling_name, self.sm_name, self.im_name))
 
@@ -75,11 +77,20 @@ class PoppyXp(PoppyVrepXp):
         ag.subscribe('movement', xp)
         # xp.evaluate_at(eval_at, tc)
 
-        self.bootstrap(xp, 16)
-        log_each = 100
-        for run in range(6000 / log_each):
+        xp.log.env_conf = conf
+        xp.log.ag_conf = {'n_bfs': self.n_bfs,
+                          'starting_position': env.rest_position,
+                          'babbling_name': self.babbling_name,
+                          'sm_name': self.sm_name,
+                          'im_name': self.im_name
+                          }
+        xp.log.bootstrap_conf = {'n': 16, 'bootstap_range_div': 28.}
+        self.bootstrap(xp, **xp.log.bootstrap_conf)
+
+        log_each = 10
+        for run in range(100 / log_each):
             xp.run(log_each)
-            with open('logs/{}'.format(self.tag), 'wb') as f:
+            with open(log_dir + '/{}'.format(self.tag), 'wb') as f:
                 pickle.dump(xp.log, f)
             f.close()
             print 'saved ' + str((run + 1) * log_each)
