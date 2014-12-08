@@ -46,8 +46,8 @@ def get_params(n_bfs, starting_position, babbling_name, sm_name, im_name):
     default[:n_dmps] = starting_position
     default[-n_dmps:] = starting_position
 
-    poppy_ag = {'m_mins': list([-1000] * (n_dmps * n_bfs)) + list(default[:n_dmps] - 180.),
-                'm_maxs': list([1000] * (n_dmps * n_bfs)) + list(default[:n_dmps] + 180.),
+    poppy_ag = {'m_mins': list([-600] * (n_dmps * n_bfs)) + list(default[:n_dmps] - 180.),
+                'm_maxs': list([600] * (n_dmps * n_bfs)) + list(default[:n_dmps] + 180.),
                 's_mins': [-1., -0.7, -0.1],
                 's_maxs': [1., 0.7, 0.7]
                 }
