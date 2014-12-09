@@ -11,7 +11,7 @@ from explauto.experiment import Experiment
 from explauto.utils import rand_bounds
 # from explauto import InterestModel
 
-from pyvrep.xp import PoppyVrepXp
+from pyvrep.xp import VrepXp
 
 from environment import VrepEnvironment, scene, conf
 from agent import DmpAgent, get_params
@@ -30,14 +30,16 @@ from agent import DmpAgent, get_params
 
 gui = False
 
+avakas = 'AVAKAS' in os.environ
 
-class PoppyXp(PoppyVrepXp):
+
+class PoppyXp(VrepXp):
     def __init__(self, babbling_name, im_name, sm_name, n_bfs=2, iter=0):
 
         self.babbling_name, self.im_name, self.sm_name = babbling_name, im_name, sm_name
         self.n_bfs = n_bfs
         self.tag = 'xp-{}_{}-{}-{}.pickle'.format(im_name, babbling_name, sm_name, iter)
-        PoppyVrepXp.__init__(self, scene, gui=gui)
+        PoppyVrepXp.__init__(self, 'poppy', scene)
 
 
     def bootstrap(self, expe, n, bootstap_range_div):
@@ -100,10 +102,14 @@ if __name__ == '__main__':
     # SM = ('knn', )
     # IM = ('motor', 'goal')
     # print 'creating xp'
-    expes = [PoppyXp('goal', 'discretized_progress', 'knn', n_bfs=3, iter=0)]
+    expe = PoppyXp('goal', 'discretized_progress', 'knn', n_bfs=3, iter=0)
     # expes[0].setup()
     # expes[0].run()
-    expes[0].start()
+    if avakas:
+        expe.spawn(avakas=True)
+    else:
+        expe.spawn(gui=gui)    
+    # expes[0].start()
     # pool = VrepXpPool(expes)
     # pool.run(2)
 
