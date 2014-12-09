@@ -86,11 +86,13 @@ class PoppyXp(VrepXp):
                           'sm_name': self.sm_name,
                           'im_name': self.im_name
                           }
-        xp.log.bootstrap_conf = {'n': 16, 'bootstap_range_div': 28.}
+        xp.log.bootstrap_conf = {'n': 16, 'bootstap_range_div': 48.}
+	xp.log.description = "bootstrap_div_range higher"
+
         self.bootstrap(xp, **xp.log.bootstrap_conf)
 
-        log_each = 10
-        for run in range(100 / log_each):
+        log_each = 100
+        for run in range(10000 / log_each):
             xp.run(log_each)
             with open(log_dir + '/{}'.format(self.tag), 'wb') as f:
                 pickle.dump(xp.log, f)
@@ -102,6 +104,7 @@ if __name__ == '__main__':
     # SM = ('knn', )
     # IM = ('motor', 'goal')
     # print 'creating xp'
+    # expe = PoppyXp('goal', 'discretized_progress', 'knn', n_bfs=3, iter=0)
     expe = PoppyXp('goal', 'discretized_progress', 'knn', n_bfs=3, iter=0)
     # expes[0].setup()
     # expes[0].run()
