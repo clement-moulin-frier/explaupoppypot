@@ -39,7 +39,7 @@ class PoppyXp(VrepXp):
         self.babbling_name, self.im_name, self.sm_name = babbling_name, im_name, sm_name
         self.n_bfs = n_bfs
         self.tag = 'xp-{}_{}-{}-{}.pickle'.format(im_name, babbling_name, sm_name, iter)
-        PoppyVrepXp.__init__(self, 'poppy', scene)
+        VrepXp.__init__(self, 'poppy', scene)
 
 
     def bootstrap(self, expe, n, bootstap_range_div):
@@ -108,7 +108,7 @@ if __name__ == '__main__':
     if avakas:
         expe.spawn(avakas=True)
     else:
-        expe.spawn(gui=gui)    
+        expe.spawn(gui=gui)
     # expes[0].start()
     # pool = VrepXpPool(expes)
     # pool.run(2)
