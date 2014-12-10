@@ -1,6 +1,7 @@
 import os
 import pickle
 import datetime
+import argparse
 
 from numpy import array, nan
 from numpy.random import randn
@@ -34,11 +35,12 @@ avakas = 'AVAKAS' in os.environ
 
 
 class PoppyXp(VrepXp):
-    def __init__(self, babbling_name, im_name, sm_name, n_bfs=2, iter=0):
+    def __init__(self, log_dir, babbling_name, im_name, sm_name, n_bfs=2, iter=0):
 
         self.babbling_name, self.im_name, self.sm_name = babbling_name, im_name, sm_name
         self.n_bfs = n_bfs
         self.tag = 'xp-{}_{}-{}-{}.pickle'.format(im_name, babbling_name, sm_name, iter)
+	self.log_dir = log_dir
         VrepXp.__init__(self, 'poppy', scene)
 
 
@@ -62,9 +64,9 @@ class PoppyXp(VrepXp):
         expe._update_logs()
 
     def run(self):
-        date = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        log_dir = 'logs/' + date
-        os.mkdir(log_dir)
+        # date = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        log_dir = self.log_dir  # 'logs/' + date
+        # os.mkdir(log_dir)
 
         env = VrepEnvironment(self.robot, **conf)
 
@@ -105,7 +107,10 @@ if __name__ == '__main__':
     # IM = ('motor', 'goal')
     # print 'creating xp'
     # expe = PoppyXp('goal', 'discretized_progress', 'knn', n_bfs=3, iter=0)
-    expe = PoppyXp('goal', 'discretized_progress', 'knn', n_bfs=3, iter=0)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--log_dir', type=str, required=True)
+    args = parser.parse_args()
+    expe = PoppyXp(args.log_dir, 'goal', 'discretized_progress', 'knn', n_bfs=3, iter=0)
     # expes[0].setup()
     # expes[0].run()
     if avakas:
