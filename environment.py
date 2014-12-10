@@ -7,35 +7,8 @@ from pypot.primitive import LoopPrimitive
 
 from explauto.utils import bounds_min_max
 from explauto.environment.environment import Environment
-from explauto.exceptions import ExplautoEnvironmentUpdateError
 
-import pypot
 import poppytools
-
-configfile = os.path.join(os.path.dirname(poppytools.__file__),
-                          'configuration', 'poppy_config.json')
-
-with open(configfile) as f:
-    poppy_config = json.load(f)
-
-scene = 'poppy-lying_sticky.ttt'
-
-alias = 'motors'  # 'l_leg'
-
-conf = {
-    'motors': alias,
-    'move_duration': 6.,
-    't_reset': 1.,
-    'm_mins': array([-360.] * len(poppy_config['motors'])),
-    'm_maxs': array([360.] * len(poppy_config['motors'])),
-    's_mins': [-0.5, -0.7, 0.],
-    's_maxs': [1., 0.7, 0.7]
-}
-
-constraints = {}
-# constraints = {'l_shoulder_x': (-110., 50.),
-#                'r_shoulder_x': (-50., 110.)}
-
 
 class MovementPrimitive(LoopPrimitive):
     def __init__(self, environment, freq, motors, mov, primitive_duration, log):
@@ -48,8 +21,6 @@ class MovementPrimitive(LoopPrimitive):
         self.env = environment
 
     def update(self):
-            # raise ExplautoEnvironmentUpdateError("Vrep time < 0")
-
         if self.elapsed_time > self.primitive_duration:
             self.stop(wait=False)
             return
@@ -79,19 +50,27 @@ class VrepEnvironment(Environment):
         self.motors = []
         for i_mot, mot in enumerate(getattr(self.robot, motors)):
             self.motors.append(mot.name)
-            if mot.name in constraints.keys():
-                m_mins[i_mot] = constraints[mot.name][0]
-                m_maxs[i_mot] = constraints[mot.name][1]
+            # if mot.name in constraints.keys():
+            #     m_mins[i_mot] = constraints[mot.name][0]
+            #     m_maxs[i_mot] = constraints[mot.name][1]
 
         time.sleep(4)
         rest_position = []
-        # angle_limits = []
         for m in self.robot.motors:
             rest_position.append(m.present_position)
         self.rest_position = array(rest_position)
 
         self.move_duration = move_duration
         self.t_reset = t_reset
+
+    @classmethod
+    def from_settings(cls, robot, motors, move_duration, t_reset,
+                      m_half_range, s_mins, s_maxs):
+        n_motors = len(getattr(robot, motors))
+        m_mins = array([-m_half_range] * n_motors)
+        m_maxs = array([m_half_range] * n_motors)
+        return cls(robot, motors, move_duration, t_reset,
+                   m_mins, m_maxs, s_mins, s_maxs)
 
     def update(self, m_ag, log=True):
         m_env = self.compute_motor_command(m_ag)
