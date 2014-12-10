@@ -22,7 +22,7 @@ avakas = 'AVAKAS' in os.environ
 
 class PoppyXp(VrepXp):
     def __init__(self, env_config, ag_config, expe_config,
-                 log_dir, tag='expe_log', description=''):
+                 log_dir, i_expe=None, tag='expe_log', description=''):
         self.env_config = env_config
         self.ag_config = ag_config
         self.expe_config = expe_config
@@ -31,6 +31,7 @@ class PoppyXp(VrepXp):
         self.description = description
         self.n_runs = expe_config['n_runs']
         self.log_each = expe_config['log_each']
+        self.i_expe = i_expe
 
         VrepXp.__init__(self, 'poppy', expe_config['scene'])
 
@@ -71,9 +72,14 @@ class PoppyXp(VrepXp):
 
         self.bootstrap(xp, **self.expe_config['bootstrap_config'])
 
+        file = self.log_dir + '/{}'.format(self.tag)
+        if self.i_expe is not None:
+            file += ('_' + str(self.i_expe))
+        file += '.pickle'
+
         for run in range(self.n_runs / self.log_each):
             xp.run(self.log_each)
-            with open(self.log_dir + '/{}.pickle'.format(self.tag), 'wb') as f:
+            with open(file, 'wb') as f:
                 pickle.dump(xp.log, f)
             f.close()
             print 'saved ' + str((run + 1) * self.log_each)
@@ -82,10 +88,12 @@ class PoppyXp(VrepXp):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--dir', type=str, required=True)
+    parser.add_argument('--i_expe', type=int, required=True)
     args = parser.parse_args()
     sys.path.append(args.dir)
     from config import env_config, ag_config, expe_config
-    expe = PoppyXp(env_config, ag_config, expe_config, log_dir=args.dir)
+    expe = PoppyXp(env_config, ag_config, expe_config,
+                   log_dir=args.dir, i_expe=args.i_expe)
 
     if avakas:
         expe.spawn(avakas=True)
