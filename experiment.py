@@ -1,33 +1,19 @@
 import os
+import sys
 import pickle
-import datetime
 import argparse
 
 from numpy import array, nan
 from numpy.random import randn
 
-# from explauto.sensorimotor_model.nearest_neighbor import NearestNeighbor
 from explauto.utils.config import make_configuration
 from explauto.experiment import Experiment
 from explauto.utils import rand_bounds
-# from explauto import InterestModel
 
 from pyvrep.xp import VrepXp
 
-from environment import VrepEnvironment, scene, conf
-from agent import DmpAgent, get_params
-
-
-
-
-# sms = {
-#     'knn': (NearestNeighbor, {'sigma_ratio': 1. / 28}),
-# }
-
-# motors = ['l_hip_x', 'l_hip_z', 'l_hip_y', 'l_knee_y', 'l_ankle_y']
-
-# eval_at = [2, 10]
-# tc = load('tc-25.npy')[:3]
+from environment import VrepEnvironment
+from agent import DmpAgent
 
 gui = False
 
@@ -35,14 +21,18 @@ avakas = 'AVAKAS' in os.environ
 
 
 class PoppyXp(VrepXp):
-    def __init__(self, log_dir, babbling_name, im_name, sm_name, n_bfs=2, iter=0):
+    def __init__(self, env_config, ag_config, expe_config,
+                 log_dir, tag='expe_log', description=''):
+        self.env_config = env_config
+        self.ag_config = ag_config
+        self.expe_config = expe_config
+        self.log_dir = log_dir
+        self.tag = tag
+        self.description = description
+        self.n_runs = expe_config['n_runs']
+        self.log_each = expe_config['log_each']
 
-        self.babbling_name, self.im_name, self.sm_name = babbling_name, im_name, sm_name
-        self.n_bfs = n_bfs
-        self.tag = 'xp-{}_{}-{}-{}.pickle'.format(im_name, babbling_name, sm_name, iter)
-	self.log_dir = log_dir
-        VrepXp.__init__(self, 'poppy', scene)
-
+        VrepXp.__init__(self, 'poppy', expe_config['scene'])
 
     def bootstrap(self, expe, n, bootstap_range_div):
         conf = make_configuration(expe.ag.conf.m_centers - expe.ag.conf.m_ranges/(2 * bootstap_range_div),
@@ -64,13 +54,10 @@ class PoppyXp(VrepXp):
         expe._update_logs()
 
     def run(self):
-        # date = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        log_dir = self.log_dir  # 'logs/' + date
-        # os.mkdir(log_dir)
+        env = VrepEnvironment.from_settings(self.robot, **self.env_config)
 
-        env = VrepEnvironment(self.robot, **conf)
-
-        ag = DmpAgent(**get_params(self.n_bfs, env.rest_position, self.babbling_name, self.sm_name, self.im_name))
+        ag = DmpAgent.from_settings(starting_position=env.rest_position,
+                                    **self.ag_config)
 
         print 'Running xp', self.tag
 
@@ -79,48 +66,28 @@ class PoppyXp(VrepXp):
         env.unsubscribe('motor', xp)
         env.unsubscribe('sensori', xp)
         ag.subscribe('movement', xp)
-        # xp.evaluate_at(eval_at, tc)
 
-        xp.log.env_conf = conf
-        xp.log.ag_conf = {'n_bfs': self.n_bfs,
-                          'starting_position': env.rest_position,
-                          'babbling_name': self.babbling_name,
-                          'sm_name': self.sm_name,
-                          'im_name': self.im_name
-                          }
-        xp.log.bootstrap_conf = {'n': 16, 'bootstap_range_div': 48.}
-	xp.log.description = "bootstrap_div_range higher"
+        xp.log.description = self.description
 
-        self.bootstrap(xp, **xp.log.bootstrap_conf)
+        self.bootstrap(xp, **self.expe_config['bootstrap_config'])
 
-        log_each = 100
-        for run in range(10000 / log_each):
-            xp.run(log_each)
-            with open(log_dir + '/{}'.format(self.tag), 'wb') as f:
+        for run in range(self.n_runs / self.log_each):
+            xp.run(self.log_each)
+            with open(self.log_dir + '/{}.pickle'.format(self.tag), 'wb') as f:
                 pickle.dump(xp.log, f)
             f.close()
-            print 'saved ' + str((run + 1) * log_each)
+            print 'saved ' + str((run + 1) * self.log_each)
 
 
 if __name__ == '__main__':
-    # SM = ('knn', )
-    # IM = ('motor', 'goal')
-    # print 'creating xp'
-    # expe = PoppyXp('goal', 'discretized_progress', 'knn', n_bfs=3, iter=0)
     parser = argparse.ArgumentParser()
-    parser.add_argument('--log_dir', type=str, required=True)
+    parser.add_argument('--dir', type=str, required=True)
     args = parser.parse_args()
-    expe = PoppyXp(args.log_dir, 'goal', 'discretized_progress', 'knn', n_bfs=3, iter=0)
-    # expes[0].setup()
-    # expes[0].run()
+    sys.path.append(args.dir)
+    from config import env_config, ag_config, expe_config
+    expe = PoppyXp(env_config, ag_config, expe_config, log_dir=args.dir)
+
     if avakas:
         expe.spawn(avakas=True)
     else:
         expe.spawn(gui=gui)
-    # expes[0].start()
-    # pool = VrepXpPool(expes)
-    # pool.run(2)
-
-    # pool = VrepXpPool([IkXp(im, sm, i + 1)
-                       # for i in range(3) for sm in SM for im in IM])
-    # pool.run(2)
